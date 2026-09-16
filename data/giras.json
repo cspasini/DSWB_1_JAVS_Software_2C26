@@ -1,0 +1,20 @@
+[
+  {
+    "id": "gira-001",
+    "artista": "Cuarteto de Cuerdas Mendoza",
+    "nombreTour": "Travesía Cuyana 2026",
+    "origen": "Mendoza",
+    "destino": "Buenos Aires",
+    "aforoTotal": 150,
+    "estado": "Confirmada"
+  },
+  {
+    "id": "gira-002",
+    "artista": "La Juntada Rock",
+    "nombreTour": "Circuito Dual Federal",
+    "origen": "Buenos Aires",
+    "destino": "Mendoza",
+    "aforoTotal": 250,
+    "estado": "Confirmada"
+  }
+]
