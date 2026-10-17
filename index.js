@@ -1,37 +1,60 @@
-const express = require('express');
-const path = require('path'); // Módulo nativo para manejar rutas de carpetas
-const app = express();
-const PORT = 3127;
+// Se reemplazo la tecnologia Common JS por ECMAScript Modules (ESM) para aprovechar las ventajas de import/export y la compatibilidad con herramientas modernas.
+import "dotenv/config"; // Carga variables de entorno desde un archivo .env
+import express from "express";
+import path from "path"; // Módulo nativo para manejar rutas de carpetas
+import { fileURLToPath } from "url"; // Para obtener la ruta del archivo actual
+import { modulos } from "./config/modulos.js";
+import { identificarUsuario, protegerPagina } from "./middlewares/seguridad.js";
+import authRoutes from "./routes/authRoutes.js";
+import { mostrarLogin } from "./controllers/authController.js";
 
-// Middleware para interpretar datos JSON
-app.use(express.json());
+import { conectarDB } from "./config/db.js"; // Importamos la función para conectar a la base de datos
+import { manejarErrores, rutaNoEncontrada } from "./middlewares/errores.js"; // Importamos los middlewares de manejo de errores
+import giraRoutes from "./routes/giraRoutes.js"; // Importamos las rutas de giras
+import { mostrarCartelera } from "./controllers/giraController.js"; // Importamos el controlador para mostrar la cartelera
+
+//En ES Modules no existe __dirname, por lo que se reconstruye desde import.meta.url
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const app = express();
+const PORT = process.env.PORT || 3127;
+
+// Middleware base
+app.use(express.json({ limit: "10kb" })); // Para parsear JSON con límite de tamaño
+app.use(express.static(path.join(__dirname, "public"))); // Servir archivos estáticos desde la carpeta 'public'
+
+app.use(identificarUsuario);
+
+//API REST
+app.use("/api", authRoutes);
+app.use("/api", giraRoutes); // Rutas de la API para giras
+
+app.get("/login", mostrarLogin); // Vista del login
+app.get("/cartelera", protegerPagina, mostrarCartelera); // Vista web de la cartelera
+app.get("/", protegerPagina, (_req, res) => {
+  res.render("inicio", { modulos });
+});
 
 // CONFIGURACIÓN DE PUG (Motor de plantillas)
-app.set('view engine', 'pug');
-app.set('views', path.join(__dirname, 'views'));
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
 
-// Importamos e integramos las rutas modulares
-const giraRoutes = require('./routes/giraRoutes');
-app.use('/api', giraRoutes);
+// 404 y manejo de errores
+app.use(rutaNoEncontrada);
+app.use(manejarErrores);
 
-// NUEVA RUTA DE VISTA: Renderiza las giras en la interfaz web de Pug
-const Gira = require('./models/Gira');
-app.get('/cartelera', (req, res) => {
-    try {
-        const todasLasGiras = Gira.obtenerTodas();
-        // Renderiza el archivo 'listaGiras.pug' pasándole los datos de las travesías
-        res.render('listaGiras', { giras: todasLasGiras });
-    } catch (error) {
-        res.status(500).send("Error al cargar la cartelera de Urbana Cult");
-    }
-});
+// Conectamos a la base de datos antes de iniciar el servidor
+async function iniciar() {
+  await conectarDB(); // Conexión a la base de datos
+  app.listen(PORT, () => {
+    console.log(
+      `[JAVS] Servidor de Urbana Cult corriendo en http://localhost:${PORT}`,
+    );
+  });
+}
 
-// Ruta base de cortesía
-app.get('/', (req, res) => {
-    res.send("Servidor central de Urbana Cult - Desarrollado por JAVS Software");
-});
-
-// Iniciamos la escucha del servidor
-app.listen(PORT, () => {
-    console.log(`[JAVS] Servidor de Urbana Cult corriendo en http://localhost:${PORT}`);
+// Llamamos a la función para iniciar el servidor
+iniciar().catch((error) => {
+  console.error(`[JAVS] Error al iniciar el servidor: ${error.message}`);
+  process.exit(1); // Salimos del proceso con un código de error
 });
