@@ -1,56 +1,83 @@
-// Importamos el modelo POO que creamos antes
-const Gira = require('../models/Gira');
+import mongoose from "mongoose";
+import Gira, { ESTADOS } from "../models/Gira.js";
+
+const idValido = (id) => mongoose.isObjectIdOrHexString(id);
+
+const idInvalido = (res) =>
+  res
+    .status(400)
+    .json({ mensaje: "El identificador de la Travesia Cultural no es válido" });
+
+const noExiste = (res) =>
+  res.status(404).json({ mensaje: "La travesia Culltural no existe" });
 
 // 1. Controlador para listar todas las giras (Formato JSON)
-exports.listarGiras = (req, res) => {
-    try {
-        const giras = Gira.obtenerTodas();
-        res.json(giras);
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al obtener las Travesías Culturales" });
-    }
+export const listarGiras = async (_req, res) => {
+  const giras = await Gira.find().sort({ createdAt: -1 });
+  res.json(giras);
 };
 
 // 2. Controlador para buscar una gira específica por ID (Uso de Ruta Dinámica)
-exports.obtenerGiraPorId = (req, res) => {
-    try {
-        // Obtenemos el id directamente desde los parámetros de la URL dinámica
-        const { id } = req.params; 
-        
-        // ¡AQUÍ ESTABA EL ERROR! (Debe estar todo junto: giraEncontrada)
-        const giraEncontrada = Gira.obtenerPorId(id);
+export const obtenerGiraPorId = async (req, res) => {
+  const { id } = req.params;
+  if (!idValido(id)) return idInvalido(res);
 
-        if (!giraEncontrada) {
-            return res.status(404).json({ mensaje: "La Travesía Cultural no existe" });
-        }
+  const gira = await Gira.findById(id);
+  if (!gira) return noExiste(res);
 
-        res.json(giraEncontrada);
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al procesar la solicitud" });
-    }
+  res.json(gira);
 };
 
-// 3. Controlador para crear una nueva gira (Persistencia en JSON)
-exports.crearGira = (req, res) => {
-    try {
-        const { id, artista, nombreTour, origen, destino, aforoTotal } = req.body;
+// 3. Crear una Gira
+export const crearGira = async (req, res) => {
+  const gira = await Gira.create(req.datosGira);
 
-        // Validación simple de datos obligatorios
-        if (!id || !artista || !nombreTour || !origen || !destino || !aforoTotal) {
-            return res.status(400).json({ mensaje: "Todos los campos son obligatorios" });
-        }
+  res.status(201).json({
+    mensaje: "¡Travesía Cultural confirmada y publicada en bloque con éxito!",
+    gira,
+  });
+};
 
-        // Instanciamos el objeto usando la Clase POO de nuestro modelo
-        const nuevaGira = new Gira(id, artista, nombreTour, origen, destino, aforoTotal);
-        
-        // Guardamos físicamente en el archivo JSON
-        Gira.guardar(nuevaGira);
+// 4. Actualizar una gira (acepta los campos que se quieran cambiar)
+export const actualizarGira = async (req, res) => {
+  const { id } = req.params;
+  if (!idValido(id)) return idInvalido(res);
 
-        res.status(201).json({
-            mensaje: "¡Travesía Cultural confirmada y publicada en bloque con éxito!",
-            gira: nuevaGira
-        });
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al registrar la gira" });
-    }
+  if (Object.keys(req.datosGira).length === 0) {
+    return res
+      .status(400)
+      .json({ mensaje: "No se enviaron campos para actualizar" });
+  }
+
+  const gira = await Gira.findByIdAndUpdate(id, req.datosGira, {
+    returnDocument: "after",
+    runValidators: true, // aplica las validaciones del esquema tambien al editar
+  });
+  if (!gira) return noExiste(res);
+  res.json({ mensaje: "Travesía Cultural actuaizada correctamente", gira });
+};
+
+// 5. Eliminar una gira
+export const eliminarGira = async (req, res) => {
+  const { id } = req.params;
+  if (!idValido(id)) return idInvalido(res);
+
+  const gira = await Gira.findByIdAndDelete(id);
+  if (!gira) return noExiste(res);
+
+  res.json({ mensaje: "Travesía Cultural eliminada de la cartelera", gira });
+};
+
+// Vista: cartelera renderizada con Pug (el front luego la edita con fetch)
+export const mostrarCartelera = async (_req, res) => {
+  try {
+    const giras = await Gira.find().sort({ createdAt: -1 });
+    res.render("listaGiras", {
+      giras: giras.map((g) => g.toJSON()),
+      estados: ESTADOS,
+    });
+  } catch (error) {
+    console.error("[JAVS] Error al renderizar la cartelera:", error);
+    res.status(500).send("Error al cargar la cartelera de Urbana Cult");
+  }
 };
