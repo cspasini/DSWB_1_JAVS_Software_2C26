@@ -1,16 +1,27 @@
-const express = require('express');
-const router = express.Router();
+import { Router } from "express";
+import * as giraController from "../controllers/giraController.js";
+import { filtrarCamposGira } from "../middlewares/validarGira.js";
+import { proteger } from "../middlewares/seguridad.js";
 
-// Importamos el controlador correspondiente
-const giraController = require('../controllers/giraController');
+const router = Router();
 
-// Ruta para obtener todas las giras (Método GET)
-router.get('/travesias', giraController.listarGiras);
+// Lecturas Publicas
+router.get("/travesias", giraController.listarGiras); // Ruta para obtener todas las giras (Método GET)
+router.get("/travesias/:id", giraController.obtenerGiraPorId); // RUTA DINÁMICA: El ':id' es un parámetro variable en la URL (Método GET)
 
-// RUTA DINÁMICA: El ':id' es un parámetro variable en la URL (Método GET)
-router.get('/travesias/:id', giraController.obtenerGiraPorId);
+// escritura, pasan por un middleware de proteccion para ususarios no autorizados(ver middlewares/seguridad.js)
+router.post(
+  "/travesias",
+  proteger,
+  filtrarCamposGira,
+  giraController.crearGira,
+); // Ruta para dar de alta una nueva gira en la red de Urbana Cult (Método POST)
+router.put(
+  "/travesias/:id",
+  proteger,
+  filtrarCamposGira,
+  giraController.actualizarGira,
+);
+router.delete("/travesias/:id", proteger, giraController.eliminarGira);
 
-// Ruta para dar de alta una nueva gira en la red de Urbana Cult (Método POST)
-router.post('/travesias', giraController.crearGira);
-
-module.exports = router;
+export default router;
