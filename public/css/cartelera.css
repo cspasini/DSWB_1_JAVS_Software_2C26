@@ -1,0 +1,211 @@
+[hidden] {
+  display: none !important;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #f4f7f6;
+  margin: 0;
+  padding: 40px 16px;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+h1 {
+  color: #111;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+}
+.sub {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 30px;
+}
+/* Barra superior: enlace de vuelta al inicio y datos de la sesión */
+.barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+/* Enlace de vuelta al menú de inicio */
+.volver {
+  color: #2b6cb0;
+  text-decoration: none;
+}
+.volver:hover {
+  text-decoration: underline;
+}
+
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  color: #555;
+}
+
+/* Mensajes de resultado (éxito / error) */
+.mensaje {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+.mensaje.ok {
+  background: #e3faf2;
+  color: #087f5b;
+}
+.mensaje.error {
+  background: #ffe3e3;
+  color: #c92a2a;
+}
+.mensaje ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+/* Formulario */
+.panel {
+  background: white;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.panel h2 {
+  margin: 0 0 15px;
+  font-size: 18px;
+}
+.campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+input,
+select {
+  padding: 9px 10px;
+  border: 1px solid #cfd6d4;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+}
+input:focus,
+select:focus {
+  outline: 2px solid #2b6cb0;
+  outline-offset: 1px;
+}
+.botones {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Botones */
+.btn {
+  padding: 8px 14px;
+  border: 1px solid #111;
+  background: white;
+  color: #111;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn:hover {
+  background: #f1f3f2;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-principal {
+  background: #111;
+  color: white;
+}
+.btn-principal:hover {
+  background: #333;
+}
+.btn-peligro {
+  border-color: #c92a2a;
+  color: #c92a2a;
+}
+.btn-peligro:hover {
+  background: #fff0f0;
+}
+
+/* Tarjetas de giras */
+.card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #000;
+}
+.card-titulo {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+.tour {
+  margin: 5px 0;
+  font-weight: bold;
+  color: #2b6cb0;
+}
+.info {
+  font-size: 14px;
+  color: #555;
+  margin-top: 8px;
+}
+.info p {
+  margin: 6px 0;
+}
+.acciones {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+}
+.vacio {
+  color: #666;
+  font-style: italic;
+}
+
+/* Insignias de estado */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+.badge.confirmada {
+  background: #e3faf2;
+  color: #0ca678;
+}
+.badge.pendiente {
+  background: #fff4db;
+  color: #b06f00;
+}
+.badge.reprogramada {
+  background: #e7f0ff;
+  color: #2b6cb0;
+}
+.badge.cancelada {
+  background: #ffe3e3;
+  color: #c92a2a;
+}

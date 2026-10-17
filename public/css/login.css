@@ -1,0 +1,20 @@
+/* Pantalla de ingreso: usa la base de cartelera.css (fondo, títulos, formulario, botones, mensajes) */
+.login {
+  max-width: 400px;
+  margin: 8vh auto 0;
+}
+.login h1 {
+  font-size: 26px;
+}
+.login .campos {
+  grid-template-columns: 1fr;
+}
+.login .btn-principal {
+  width: 100%;
+}
+.login-pie {
+  margin-top: 18px;
+  font-size: 13px;
+  color: #6b7270;
+  text-align: center;
+}
