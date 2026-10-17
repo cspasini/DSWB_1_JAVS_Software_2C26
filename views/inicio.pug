@@ -1,0 +1,37 @@
+doctype html
+html(lang="es")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Inicio - Urbana Cult
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/inicio.css")
+    body
+        .container
+            .barra
+                if usuario
+                    .sesion
+                        span Sesión: #{usuario.usuario}
+                        button#btn-salir.btn(type="button") Cerrar sesión
+
+            h1 Urbana Cult
+            p.sub La cultura no tiene una sola dirección. La hacemos circular.
+
+            section.modulos(aria-label="Módulos de la plataforma")
+                each modulo in modulos
+                    if modulo.activo
+                        a.modulo.activo(href=modulo.ruta)
+                            span.modulo-icono(aria-hidden="true")= modulo.icono
+                            h2= modulo.nombre
+                            p= modulo.descripcion
+                            span.estado Disponible
+                    else
+                        div.modulo.inactivo
+                            span.modulo-icono(aria-hidden="true")= modulo.icono
+                            h2= modulo.nombre
+                            p= modulo.descripcion
+                            span.estado Próximamente
+
+            p.pie Infraestructura Digital para la Circulación Cultural Independiente — Desarrollado por JAVS Software
+
+        script(type="module", src="/js/sesion.js")
