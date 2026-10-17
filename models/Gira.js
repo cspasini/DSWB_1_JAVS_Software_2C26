@@ -1,40 +1,52 @@
-const fs = require('fs');
-const path = require('path');
+import mongoose from "mongoose";
 
-// Ubicación del archivo JSON
-const rutaBD = path.join(__dirname, '../data/giras.json');
+export const ESTADOS = ["Confirmada", "Pendiente", "Reprogramada", "Cancelada"];
 
-class Gira {
-    // Constructor (POO)
-    constructor(id, artista, nombreTour, origen, destino, aforoTotal) {
-        this.id = id;
-        this.artista = artista;
-        this.nombreTour = nombreTour;
-        this.origen = origen;
-        this.destino = destino;
-        this.aforoTotal = parseInt(aforoTotal);
-        this.estado = "Confirmada"; // Estado por defecto según el flujo de su informe
-    }
+const textoObligatorio = (etiqueta) => ({
+  type: String,
+  required: [true, `${etiqueta} es obligatorio`],
+  trim: true,
+  maxlength: [100, `${etiqueta} no puede superar los 100 caracteres`],
+});
 
-    // Método para leer todas las giras del JSON
-    static obtenerTodas() {
-        const datosCrudos = fs.readFileSync(rutaBD, 'utf-8');
-        return JSON.parse(datosCrudos);
-    }
+const giraSchema = new mongoose.Schema(
+  {
+    artista: textoObligatorio("El artista"),
+    nombreTour: textoObligatorio("El nombre del tour"),
+    origen: textoObligatorio("El origen"),
+    destino: textoObligatorio("El destino"),
+    aforoTotal: {
+      type: Number,
+      required: [true, "El aforo total es obligatorio"],
+      min: [1, "El aforo total debe ser al menos 1"],
+      cast: "El aforo total debe ser un número",
+      validate: {
+        validator: Number.isInteger,
+        message: "El aforo total debe ser un número entero",
+      },
+    },
+    estado: {
+      type: String,
+      enum: {
+        values: ESTADOS,
+        message: `Estado inválido. Valores permitidos: ${ESTADOS.join(", ")}`,
+      },
+      default: "Confirmada", // Estado por defecto según el flujo del informe
+    },
+  },
+  {
+    timestamps: true, // createdAt / updatedAt
+    toJSON: {
+      virtuals: true, // expone "id" (string) ademas de _id
+      versionKey: false,
+      transform: (_doc, ret) => {
+        delete ret._id;
+        return ret;
+      },
+    },
+  },
+);
 
-    // Método para buscar una gira específica por ID (Rutas dinámicas)
-    static obtenerPorId(id) {
-        const giras = this.obtenerTodas();
-        return giras.find(g => g.id === id);
-    }
-
-    // Método para guardar una nueva gira en el JSON
-    static guardar(nuevaGira) {
-        const giras = this.obtenerTodas();
-        giras.push(nuevaGira);
-        fs.writeFileSync(rutaBD, JSON.stringify(giras, null, 2));
-        return nuevaGira;
-    }
-}
-
-module.exports = Gira;
+// Cada instancia (new Gira({...})) es un objeto del modelo; Mongoose aporta
+// los métodos de persistencia: save(), find(), findByIdAndUpdate(), etc.
+export default mongoose.model("Gira", giraSchema);
