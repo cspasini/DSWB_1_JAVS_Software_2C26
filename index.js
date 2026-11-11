@@ -6,7 +6,9 @@ import { fileURLToPath } from "url"; // Para obtener la ruta del archivo actual
 import { modulos } from "./config/modulos.js";
 import { identificarUsuario, protegerPagina } from "./middlewares/seguridad.js";
 import authRoutes from "./routes/authRoutes.js";
+import usuarioRoutes from "./routes/usuarioRoutes.js";
 import { mostrarLogin } from "./controllers/authController.js";
+import { validarConfiguracionAuth } from "./servicios/tokens.js";
 
 import { conectarDB } from "./config/db.js"; // Importamos la función para conectar a la base de datos
 import { manejarErrores, rutaNoEncontrada } from "./middlewares/errores.js"; // Importamos los middlewares de manejo de errores
@@ -19,14 +21,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3127;
 
+// CONFIGURACIÓN DE PUG (Motor de plantillas)
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
+
 // Middleware base
 app.use(express.json({ limit: "10kb" })); // Para parsear JSON con límite de tamaño
 app.use(express.static(path.join(__dirname, "public"))); // Servir archivos estáticos desde la carpeta 'public'
 
-app.use(identificarUsuario);
+app.use(identificarUsuario); // Lee el JWT de la cookie y lo pone en req.usuario (si hay sesión)
 
 //API REST
-app.use("/api", authRoutes);
+app.use("/api", authRoutes); // Registro, login, logout y perfil
+app.use("/api", usuarioRoutes); // Rutas de la API para administrar usuarios y roles  (solo admin)
 app.use("/api", giraRoutes); // Rutas de la API para giras
 
 app.get("/login", mostrarLogin); // Vista del login
@@ -35,16 +42,13 @@ app.get("/", protegerPagina, (_req, res) => {
   res.render("inicio", { modulos });
 });
 
-// CONFIGURACIÓN DE PUG (Motor de plantillas)
-app.set("view engine", "pug");
-app.set("views", path.join(__dirname, "views"));
-
 // 404 y manejo de errores
 app.use(rutaNoEncontrada);
 app.use(manejarErrores);
 
 // Conectamos a la base de datos antes de iniciar el servidor
 async function iniciar() {
+  validarConfiguracionAuth(); // Verifica que las variables de entorno necesarias para la autenticación estén presentes. Falla si falta JWT_SECRET
   await conectarDB(); // Conexión a la base de datos
   app.listen(PORT, () => {
     console.log(
