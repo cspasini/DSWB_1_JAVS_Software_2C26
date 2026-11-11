@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { ROL, ROLES } from "../utils/roles.js";
 
-export const ROLES = ["admin", "editor"];
+export { ROLES }; // se re-exporta para que scripts/crear-usuario.js siga funcionando
 
 const usuarioSchema = new mongoose.Schema(
   {
@@ -26,7 +27,7 @@ const usuarioSchema = new mongoose.Schema(
         values: ROLES,
         message: `Rol inválido. Valores permitidos: ${ROLES.join(", ")}`,
       },
-      default: "editor",
+      default: ROL.PUBLICO,
     },
     activo: { type: Boolean, default: true }, // permite deshabilitar una cuenta sin borrarla
   },
