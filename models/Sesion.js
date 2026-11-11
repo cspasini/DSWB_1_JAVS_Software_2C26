@@ -1,3 +1,4 @@
+/* Ya no se usa el modelo Sesion, pero lo dejo por si sirve de ejemplo para crear otros modelos.
 import mongoose from "mongoose";
 
 const sesionSchema = new mongoose.Schema(
@@ -19,3 +20,4 @@ const sesionSchema = new mongoose.Schema(
 sesionSchema.index({ expiraEn: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Sesion", sesionSchema, "sesiones");
+*/
