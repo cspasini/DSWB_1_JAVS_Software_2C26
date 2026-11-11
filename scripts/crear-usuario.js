@@ -5,7 +5,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 
 import { conectarDB } from "../config/db.js";
-import Sesion from "../models/Sesion.js";
+
 import Usuario, { ROLES } from "../models/Usuario.js";
 import { hashearClave, validarClaveNueva } from "../utils/claves.js";
 import { preguntarOculto } from "../utils/consola.js";
@@ -46,7 +46,7 @@ try {
       );
     }
     await Usuario.updateOne({ _id: existente._id }, { claveHash });
-    await Sesion.deleteMany({ usuarioId: existente._id }); // cierra las sesiones que tuviera abiertas
+
     console.log(`[JAVS] Contraseña actualizada para "${nombre}"`);
   } else {
     if (actualizar) throw new Error(`El usuario "${nombre}" no existe.`);
