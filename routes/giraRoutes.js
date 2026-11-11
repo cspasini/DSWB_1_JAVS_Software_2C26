@@ -1,7 +1,8 @@
 import { Router } from "express";
 import * as giraController from "../controllers/giraController.js";
 import { filtrarCamposGira } from "../middlewares/validarGira.js";
-import { proteger } from "../middlewares/seguridad.js";
+import { permitirRoles } from "../middlewares/seguridad.js";
+import { ROL } from "../utils/roles.js";
 
 const router = Router();
 
@@ -9,19 +10,21 @@ const router = Router();
 router.get("/travesias", giraController.listarGiras); // Ruta para obtener todas las giras (Método GET)
 router.get("/travesias/:id", giraController.obtenerGiraPorId); // RUTA DINÁMICA: El ':id' es un parámetro variable en la URL (Método GET)
 
-// escritura, pasan por un middleware de proteccion para ususarios no autorizados(ver middlewares/seguridad.js)
+// escritura, solo admin y representantes de espacios (ajustable, por ejemplo sumando ROl.ARTISTA
+const puedeEditar = permitirRoles(ROL.ADMIN, ROL.ESPACIO);
+
 router.post(
   "/travesias",
-  proteger,
+  puedeEditar,
   filtrarCamposGira,
   giraController.crearGira,
 ); // Ruta para dar de alta una nueva gira en la red de Urbana Cult (Método POST)
 router.put(
   "/travesias/:id",
-  proteger,
+  puedeEditar,
   filtrarCamposGira,
   giraController.actualizarGira,
 );
-router.delete("/travesias/:id", proteger, giraController.eliminarGira);
+router.delete("/travesias/:id", puedeEditar, giraController.eliminarGira);
 
 export default router;
