@@ -1,3 +1,4 @@
+/*  lAS SESIONES SON REEMLAZADAS POR JWT, ESTE ARCHIVO YA NO SE USA. SE DEJA SOLO PARA RECORDAR CÓMO FUNCIONABA ANTES.
 import { createHash, randomBytes } from "node:crypto";
 
 import { DURACION_SESION_MS } from "../config/auth.js";
@@ -40,3 +41,4 @@ export async function cerrarSesion(token) {
   if (typeof token !== "string") return;
   await Sesion.deleteOne({ tokenHash: hashDelToken(token) });
 }
+*/
