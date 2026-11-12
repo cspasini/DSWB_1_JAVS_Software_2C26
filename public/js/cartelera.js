@@ -11,12 +11,14 @@ const CAMPOS = [
   "estado",
 ];
 
+// Si el usuario no puede editar, el formulario no existe en la página (la vista no lo dibuja).
 const form = document.querySelector("#gira-form");
 const formTitulo = document.querySelector("#form-titulo");
 const lista = document.querySelector("#lista-giras");
 const mensaje = document.querySelector("#mensaje");
 const btnGuardar = document.querySelector("#btn-guardar");
 const btnCancelar = document.querySelector("#btn-cancelar");
+const puedeEditar = document.body.dataset.puedeEditar === "true";
 
 let idEnEdicion = null; // null = creando una travesía nueva; string = editando esa
 let temporizadorMensaje;
@@ -28,6 +30,12 @@ async function pedir(url, opciones = {}) {
     headers: { "Content-Type": "application/json" },
     ...opciones,
   });
+
+  // El JWT dura 1 hora: si venció, se vuelve al ingreso.
+  if (respuesta.status === 401) {
+    window.location.href = "/login";
+    throw new Error("Sesión vencida");
+  }
 
   const datos = await respuesta.json().catch(() => ({}));
 
@@ -115,23 +123,23 @@ function crearTarjeta(gira) {
   const info = el("div", "info");
   info.append(ruta, aforo);
 
-  const btnEditar = el("button", "btn", "Editar");
-  btnEditar.type = "button";
-  btnEditar.dataset.accion = "editar";
+  tarjeta.append(titulo, el("p", "tour", `Tour: ${gira.nombreTour}`), info);
 
-  const btnEliminar = el("button", "btn btn-peligro", "Eliminar");
-  btnEliminar.type = "button";
-  btnEliminar.dataset.accion = "eliminar";
+  // Los botones de edición solo se muestran a quienes pueden editar (el servidor igual lo exige).
+  if (puedeEditar) {
+    const btnEditar = el("button", "btn", "Editar");
+    btnEditar.type = "button";
+    btnEditar.dataset.accion = "editar";
 
-  const acciones = el("div", "acciones");
-  acciones.append(btnEditar, btnEliminar);
+    const btnEliminar = el("button", "btn btn-peligro", "Eliminar");
+    btnEliminar.type = "button";
+    btnEliminar.dataset.accion = "eliminar";
 
-  tarjeta.append(
-    titulo,
-    el("p", "tour", `Tour: ${gira.nombreTour}`),
-    info,
-    acciones,
-  );
+    const acciones = el("div", "acciones");
+    acciones.append(btnEditar, btnEliminar);
+    tarjeta.append(acciones);
+  }
+
   return tarjeta;
 }
 
@@ -171,7 +179,8 @@ function salirDeEdicion() {
 
 /* ---------- Eventos ---------- */
 
-form.addEventListener("submit", async (evento) => {
+// El "?." evita errores cuando el formulario no existe (usuarios sin permiso de edición).
+form?.addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
   const datos = Object.fromEntries(new FormData(form));
@@ -193,7 +202,7 @@ form.addEventListener("submit", async (evento) => {
   }
 });
 
-btnCancelar.addEventListener("click", salirDeEdicion);
+btnCancelar?.addEventListener("click", salirDeEdicion);
 
 // Un solo listener para todos los botones de la lista (delegación de eventos)
 lista.addEventListener("click", async (evento) => {
