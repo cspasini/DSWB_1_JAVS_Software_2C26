@@ -43,6 +43,13 @@ export const mostrarLogin = (req, res) => {
   res.render("login");
 };
 
+// Página de registro (si ya hay sesión, va directo al inicio)
+export const mostrarRegistro = (req, res) => {
+  res.set("Cache-Control", "no-store");
+  if (req.usuario) return res.redirect("/");
+  res.render("registro");
+};
+
 // POST /api/auth/registro
 // Cualquiera puede registrarse, pero SIEMPRE como "publico": un admin asigna otros roles despues.
 export const registro = async (req, res) => {
