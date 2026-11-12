@@ -1,0 +1,36 @@
+doctype html
+html(lang="es")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Crear cuenta - Urbana Cult
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/login.css")
+    body
+        .container.login
+            h1 Urbana Cult
+            p.sub Crear cuenta
+
+            #mensaje(role="status", aria-live="polite", hidden)
+
+            section.panel
+                form#registro-form(novalidate)
+                    .campos
+                        label
+                            | Usuario
+                            input(type="text", name="usuario", autocomplete="username", autocapitalize="none", spellcheck="false", required, minlength="3", maxlength="50")
+                        label
+                            | Contraseña
+                            input(type="password", name="clave", autocomplete="new-password", required, maxlength="128")
+                        label
+                            | Repetir contraseña
+                            input(type="password", name="repeticion", autocomplete="new-password", required, maxlength="128")
+                    .botones
+                        button#btn-registrar.btn.btn-principal(type="submit") Crear cuenta
+
+            p.login-enlace
+                | ¿Ya tenés cuenta? 
+                a(href="/login") Ingresar
+            p.login-pie Las cuentas nuevas tienen rol público. Un administrador puede asignarte otro rol.
+        
+        script(type="module", src="/js/registro.js")
