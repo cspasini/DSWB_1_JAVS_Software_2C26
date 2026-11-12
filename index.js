@@ -4,11 +4,16 @@ import express from "express";
 import path from "path"; // Módulo nativo para manejar rutas de carpetas
 import { fileURLToPath } from "url"; // Para obtener la ruta del archivo actual
 import { modulos } from "./config/modulos.js";
-import { identificarUsuario, protegerPagina } from "./middlewares/seguridad.js";
+import {
+  identificarUsuario,
+  permitirRolesPagina,
+  protegerPagina,
+} from "./middlewares/seguridad.js";
 import authRoutes from "./routes/authRoutes.js";
 import usuarioRoutes from "./routes/usuarioRoutes.js";
-import { mostrarLogin } from "./controllers/authController.js";
+import { mostrarLogin, mostrarRegistro } from "./controllers/authController.js";
 import { validarConfiguracionAuth } from "./servicios/tokens.js";
+import { ROL } from "./utils/roles.js"; // Importamos los roles definidos en el sistema
 
 import { conectarDB } from "./config/db.js"; // Importamos la función para conectar a la base de datos
 import { manejarErrores, rutaNoEncontrada } from "./middlewares/errores.js"; // Importamos los middlewares de manejo de errores
@@ -37,9 +42,22 @@ app.use("/api", usuarioRoutes); // Rutas de la API para administrar usuarios y r
 app.use("/api", giraRoutes); // Rutas de la API para giras
 
 app.get("/login", mostrarLogin); // Vista del login
+app.get("/registro", mostrarRegistro); // Vista de registro
 app.get("/cartelera", protegerPagina, mostrarCartelera); // Vista web de la cartelera
-app.get("/", protegerPagina, (_req, res) => {
-  res.render("inicio", { modulos });
+app.get(
+  "/admin/usuarios",
+  protegerPagina,
+  permitirRolesPagina(ROL.ADMIN),
+  (_req, res) => {
+    res.render("usuarios");
+  },
+);
+app.get("/", protegerPagina, (req, res) => {
+  // Cada usuario ve solo los módulos permitidos para su rol
+  const visibles = modulos.filter(
+    (m) => !m.roles || m.roles.includes(req.usuario.rol),
+  );
+  res.render("inicio", { modulos: visibles });
 });
 
 // 404 y manejo de errores
