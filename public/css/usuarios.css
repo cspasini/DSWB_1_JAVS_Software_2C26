@@ -1,0 +1,40 @@
+/* Administración de usuarios: usa la base de cartelera.css */
+.tabla-scroll {
+  overflow-x: auto;
+}
+.tabla-usuarios {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.tabla-usuarios th,
+.tabla-usuarios td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #eceeed;
+}
+.tabla-usuarios th {
+  font-size: 13px;
+  color: #555;
+}
+.selector-rol {
+  padding: 6px 8px;
+  border: 1px solid #cfd6d4;
+  border-radius: 4px;
+  background: white;
+  font: inherit;
+}
+.selector-rol:disabled {
+  background: #f4f5f4;
+  cursor: not-allowed;
+}
+.badge.activa {
+  background: #e3faf2;
+  color: #087f5b;
+}
+.badge.inactiva {
+  background: #eceeed;
+  color: #555;
+}
