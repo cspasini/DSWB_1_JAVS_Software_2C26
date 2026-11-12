@@ -1,3 +1,4 @@
+import { ROL } from "../utils/roles.js";
 // Módulos de la plataforma que se muestran en el menú de inicio.
 // Para habilitar uno más adelante: poner activo: true y completar su ruta.
 export const modulos = [
@@ -36,5 +37,15 @@ export const modulos = [
       "Cambios de fecha y cancelaciones con efecto en cascada sobre aforos, avisos y reembolsos.",
     ruta: null,
     activo: false,
+  },
+  {
+    id: "usuarios",
+    icono: "👥",
+    nombre: "Administración de usuarios",
+    descripcion:
+      "Asignación de roles a las cuentas registradas en la plataforma.",
+    ruta: "/admin/usuarios",
+    activo: true,
+    roles: [ROL.ADMIN], // solo lo ve (y puede entrar) el administrador
   },
 ];
