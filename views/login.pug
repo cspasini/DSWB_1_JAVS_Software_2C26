@@ -24,7 +24,9 @@ html(lang="es")
                             input(type="password", name="clave", autocomplete="current-password", required, maxlength="128")
                     .botones
                         button#btn-ingresar.btn.btn-principal(type="submit") Ingresar
-
+            p.login-enlace
+                | ¿No tenés cuenta? 
+                a(href="/registro") Crear cuenta
             p.login-pie Infraestructura Digital para la Circulación Cultural Independiente — Desarrollado por JAVS Software
 
         script(type="module", src="/js/login.js")
