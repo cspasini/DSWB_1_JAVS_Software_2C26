@@ -15,6 +15,11 @@ import { mostrarLogin, mostrarRegistro } from "./controllers/authController.js";
 import { validarConfiguracionAuth } from "./servicios/tokens.js";
 import { ROL } from "./utils/roles.js"; // Importamos los roles definidos en el sistema
 
+import http from "node:http";
+import funcionRoutes from "./routes/funcionRoutes.js";
+import entradaRoutes from "./routes/entradaRoutes.js";
+import { iniciarTiempoReal } from "./servicios/tiempoReal.js";
+
 import { conectarDB } from "./config/db.js"; // Importamos la función para conectar a la base de datos
 import { manejarErrores, rutaNoEncontrada } from "./middlewares/errores.js"; // Importamos los middlewares de manejo de errores
 import giraRoutes from "./routes/giraRoutes.js"; // Importamos las rutas de giras
@@ -40,6 +45,8 @@ app.use(identificarUsuario); // Lee el JWT de la cookie y lo pone en req.usuario
 app.use("/api", authRoutes); // Registro, login, logout y perfil
 app.use("/api", usuarioRoutes); // Rutas de la API para administrar usuarios y roles  (solo admin)
 app.use("/api", giraRoutes); // Rutas de la API para giras
+app.use("/api", funcionRoutes); // Rutas de la API para funciones
+app.use("/api", entradaRoutes); // Rutas de la API para entradas
 
 app.get("/login", mostrarLogin); // Vista del login
 app.get("/registro", mostrarRegistro); // Vista de registro
@@ -66,9 +73,13 @@ app.use(manejarErrores);
 
 // Conectamos a la base de datos antes de iniciar el servidor
 async function iniciar() {
-  validarConfiguracionAuth(); // Verifica que las variables de entorno necesarias para la autenticación estén presentes. Falla si falta JWT_SECRET
+  validarConfiguracionAuth(); // Falla al arrancar si falta JWT_SECRET
   await conectarDB(); // Conexión a la base de datos
-  app.listen(PORT, () => {
+
+  const servidor = http.createServer(app); // Express y Socket.IO comparten el mismo servidor
+  iniciarTiempoReal(servidor);
+
+  servidor.listen(PORT, () => {
     console.log(
       `[JAVS] Servidor de Urbana Cult corriendo en http://localhost:${PORT}`,
     );
