@@ -62,3 +62,11 @@ export function protegerPagina(req, res, next) {
   if (req.usuario) return next();
   res.redirect("/login");
 }
+
+// Para páginas restringidas por rol: si el rol no alcanza, vuelve al inicio.
+export const permitirRolesPagina =
+  (...rolesPermitidos) =>
+  (req, res, next) => {
+    if (req.usuario && rolesPermitidos.includes(req.usuario.rol)) return next();
+    res.redirect("/");
+  };
