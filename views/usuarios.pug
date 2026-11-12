@@ -1,0 +1,33 @@
+doctype html
+html(lang="es")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Usuarios - Urbana Cult
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/usuarios.css")
+    body
+        .container
+            .barra
+                a.btn(href="/") Volver al inicio
+                .sesion
+                    span Sesión: #{usuario.usuario}
+                    button#btn-salir.btn(type="button") Cerrar sesión
+
+            h1 Administración de usuarios
+            p.sub Asigná el rol de cada cuenta. Las cuentas nuevas empiezan como público.
+
+            #mensaje(role="status", aria-live="polite", hidden)
+
+            .tabla-scroll
+                table.tabla-usuarios(data-mi-id=usuario.id)
+                    thead
+                        tr
+                            th Usuario
+                            th Rol
+                            th Estado
+                            th Alta
+                    tbody#cuerpo-usuarios
+
+        script(type="module", src="/js/sesion.js")
+        script(type="module", src="/js/usuarios.js")
