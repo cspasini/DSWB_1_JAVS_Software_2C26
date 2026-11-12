@@ -1,3 +1,4 @@
+- const puedeEditar = usuario && ["admin", "espacio"].includes(usuario.rol)
 doctype html
 html(lang="es")
     head
@@ -5,7 +6,8 @@ html(lang="es")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Cartelera - Urbana Cult
         link(rel="stylesheet", href="../css/cartelera.css")
-    body
+    
+    body(data-puede-editar=puedeEditar ? "true" : "false")
         .container
             .barra 
                 a.volver(href="/") ← Volver al inicio
@@ -19,33 +21,35 @@ html(lang="es")
             
             #mensaje(role="status", aria-live="polite", hidden)
 
-            section.panel
-                h2#form-titulo Nueva travesía
-                form#gira-form(novalidate)
-                    .campos
-                        label
-                            | Artista
-                            input(type="text", name="artista", required, maxlength="100")
-                        label
-                            | Nombre del tour
-                            input(type="text", name="nombreTour", required, maxlength="100")
-                        label
-                            | Origen
-                            input(type="text", name="origen", required, maxlength="100")
-                        label
-                            | Destino
-                            input(type="text", name="destino", required, maxlength="100")
-                        label
-                            | Aforo total
-                            input(type="number", name="aforoTotal", required, min="1", step="1")
-                        label
-                            | Estado
-                            select(name="estado")
-                                each estado in estados
-                                    option(value=estado)= estado
-                    .botones
-                        button#btn-guardar.btn.btn-principal(type="submit") Publicar travesía
-                        button#btn-cancelar.btn(type="button", hidden) Cancelar edición
+            //- El formulario solo se dibuja para admin y espacio. La seguridad real está en el servidor (permitirRoles).
+            if puedeEditar
+                section.panel
+                    h2#form-titulo Nueva travesía
+                    form#gira-form(novalidate)
+                        .campos
+                            label
+                                | Artista
+                                input(type="text", name="artista", required, maxlength="100")
+                            label
+                                | Nombre del tour
+                                input(type="text", name="nombreTour", required, maxlength="100")
+                            label
+                                | Origen
+                                input(type="text", name="origen", required, maxlength="100")
+                            label
+                                | Destino
+                                input(type="text", name="destino", required, maxlength="100")
+                            label
+                                | Aforo total
+                                input(type="number", name="aforoTotal", required, min="1", step="1")
+                            label
+                                | Estado
+                                select(name="estado")
+                                    each estado in estados
+                                        option(value=estado)= estado
+                        .botones
+                            button#btn-guardar.btn.btn-principal(type="submit") Publicar travesía
+                            button#btn-cancelar.btn(type="button", hidden) Cancelar edición
 
             //- Primer pintado desde el servidor; después public/js/cartelera.js lo mantiene actualizado con fetch.
             section#lista-giras
@@ -66,9 +70,10 @@ html(lang="es")
                                 | 👥
                                 strong Aforo Sincronizado:
                                 |  #{gira.aforoTotal} localidades disponibles (Inventario Único)
+                        if puedeEditar
                         .acciones
                             button.btn(type="button", data-accion="editar") Editar
                             button.btn.btn-peligro(type="button", data-accion="eliminar") Eliminar
 
-        script(type="module", src="../js/sesion.js")
-        script(type="module", src="../js/cartelera.js")
+        script(type="module", src="/js/sesion.js")
+        script(type="module", src="/js/cartelera.js")
