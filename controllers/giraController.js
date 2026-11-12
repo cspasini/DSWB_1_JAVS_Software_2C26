@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import Gira, { ESTADOS } from "../models/Gira.js";
+import Funcion from "../models/Funcion.js";
+import { emitirCartelera } from "../servicios/tiempoReal.js";
 
 const idValido = (id) => mongoose.isObjectIdOrHexString(id);
 
@@ -31,7 +33,7 @@ export const obtenerGiraPorId = async (req, res) => {
 // 3. Crear una Gira
 export const crearGira = async (req, res) => {
   const gira = await Gira.create(req.datosGira);
-
+  emitirCartelera({ entidad: "gira", accion: "creada", id: gira.id });
   res.status(201).json({
     mensaje: "¡Travesía Cultural confirmada y publicada en bloque con éxito!",
     gira,
@@ -54,6 +56,7 @@ export const actualizarGira = async (req, res) => {
     runValidators: true, // aplica las validaciones del esquema tambien al editar
   });
   if (!gira) return noExiste(res);
+  emitirCartelera({ entidad: "gira", accion: "actualizada", id: gira.id });
   res.json({ mensaje: "Travesía Cultural actuaizada correctamente", gira });
 };
 
@@ -62,8 +65,18 @@ export const eliminarGira = async (req, res) => {
   const { id } = req.params;
   if (!idValido(id)) return idInvalido(res);
 
+  // Una gira con entradas vendidas no se puede borrar (primero hay que reprogramar o cancelar).
+  if (await Funcion.exists({ giraId: id, vendidas: { $gt: 0 } })) {
+    return res.status(409).json({
+      mensaje: "No se puede eliminar una travesía con entradas vendidas",
+    });
+  }
+
   const gira = await Gira.findByIdAndDelete(id);
   if (!gira) return noExiste(res);
+
+  await Funcion.deleteMany({ giraId: id }); // sus funciones (sin ventas) se eliminan con ella
+  emitirCartelera({ entidad: "gira", accion: "eliminada", id });
 
   res.json({ mensaje: "Travesía Cultural eliminada de la cartelera", gira });
 };
