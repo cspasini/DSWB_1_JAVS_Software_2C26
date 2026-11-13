@@ -17,8 +17,8 @@ export const modulos = [
     nombre: "Boletería e inventario único",
     descripcion:
       "Venta física y digital sincronizada en tiempo real para evitar la sobreventa.",
-    ruta: null,
-    activo: false,
+    ruta: "/boleteria",
+    activo: true,
   },
   {
     id: "pagos",
