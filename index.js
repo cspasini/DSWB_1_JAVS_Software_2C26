@@ -66,6 +66,9 @@ app.get("/", protegerPagina, (req, res) => {
   );
   res.render("inicio", { modulos: visibles });
 });
+app.get("/boleteria", protegerPagina, (_req, res) => {
+  res.render("boleteria");
+});
 
 // 404 y manejo de errores
 app.use(rutaNoEncontrada);
