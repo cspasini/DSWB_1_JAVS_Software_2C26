@@ -21,8 +21,17 @@
   border-left: 4px solid #087f5b;
   font-size: 14px;
 }
+.funcion.editable {
+  grid-template-columns: 1.3fr 1fr 1fr auto;
+  align-items: center;
+}
 .funcion p {
   margin: 0;
+}
+.funcion-puertas {
+  display: block;
+  font-size: 12px;
+  color: #6b7270;
 }
 .funcion.agotada {
   border-left-color: #b42318;
@@ -31,15 +40,39 @@
   border-left-color: #999;
   opacity: 0.7;
 }
-.funcion.cancelada .funcion-cuando {
+.funcion.cancelada .funcion-cuando strong {
   text-decoration: line-through;
 }
 .funciones .vacio {
   font-size: 14px;
   color: #6b7270;
 }
+.btn-chico {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+/* Formulario de nueva función */
+.ayuda {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #555;
+}
+.opciones-ingreso {
+  margin: 14px 0;
+}
+.opciones-ingreso summary {
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+}
+.opciones-ingreso .campos {
+  margin-top: 10px;
+}
+
 @media (max-width: 640px) {
-  .funcion {
+  .funcion,
+  .funcion.editable {
     grid-template-columns: 1fr;
   }
 }
