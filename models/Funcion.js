@@ -9,6 +9,17 @@ const textoObligatorio = (etiqueta) => ({
   maxlength: [100, `${etiqueta} no puede superar los 100 caracteres`],
 });
 
+// Ventana de ingreso por defecto, en minutos respecto del inicio. Cada función puede definir la suya.
+export const VENTANA_INGRESO_DEFECTO = {
+  aperturaAntesMin: 120, // las puertas abren 2 h antes
+  cierreDespuesMin: 180, // el ingreso cierra 3 h después del inicio
+};
+
+const minutosEnteros = () => ({
+  validator: Number.isInteger,
+  message: "Debe ser un número entero de minutos",
+});
+
 // Una función es una fecha concreta de una gira en una sala. Acá vive el inventario único:
 // disponibles = aforo - vendidas, sin importar si la venta fue digital o en boletería física.
 const funcionSchema = new mongoose.Schema(
@@ -49,6 +60,32 @@ const funcionSchema = new mongoose.Schema(
         message: `Estado inválido. Valores permitidos: ${ESTADOS_FUNCION.join(", ")}`,
       },
       default: "Programada",
+    },
+    // Ventana en la que se pueden validar entradas en puerta (se elige al crear la función).
+    aperturaAntesMin: {
+      type: Number,
+      default: VENTANA_INGRESO_DEFECTO.aperturaAntesMin,
+      min: [0, "Las puertas no pueden abrir después del inicio"],
+      max: [
+        720,
+        "Las puertas no pueden abrir con más de 12 horas de anticipación",
+      ],
+      cast: "Los minutos de apertura deben ser un número",
+      validate: minutosEnteros(),
+    },
+    cierreDespuesMin: {
+      type: Number,
+      default: VENTANA_INGRESO_DEFECTO.cierreDespuesMin,
+      min: [
+        15,
+        "El ingreso debe seguir abierto al menos 15 minutos después del inicio",
+      ],
+      max: [
+        1440,
+        "El ingreso no puede cerrar más de 24 horas después del inicio",
+      ],
+      cast: "Los minutos de cierre deben ser un número",
+      validate: minutosEnteros(),
     },
   },
   {
