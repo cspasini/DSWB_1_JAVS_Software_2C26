@@ -5,11 +5,11 @@ html(lang="es")
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Cartelera - Urbana Cult
-        link(rel="stylesheet", href="../css/cartelera.css")
-    
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/funciones.css")
     body(data-puede-editar=puedeEditar ? "true" : "false")
         .container
-            .barra 
+            .barra
                 a.volver(href="/") ← Volver al inicio
                 if usuario
                     .sesion
@@ -18,7 +18,7 @@ html(lang="es")
 
             h1 Urbana Cult — Cartelera Central de Giras
             p.sub Infraestructura Digital para la Circulación Cultural Independiente (Desarrollado por JAVS Software)
-            
+
             #mensaje(role="status", aria-live="polite", hidden)
 
             //- El formulario solo se dibuja para admin y espacio. La seguridad real está en el servidor (permitirRoles).
@@ -40,9 +40,6 @@ html(lang="es")
                                 | Destino
                                 input(type="text", name="destino", required, maxlength="100")
                             label
-                                | Aforo total
-                                input(type="number", name="aforoTotal", required, min="1", step="1")
-                            label
                                 | Estado
                                 select(name="estado")
                                     each estado in estados
@@ -51,7 +48,7 @@ html(lang="es")
                             button#btn-guardar.btn.btn-principal(type="submit") Publicar travesía
                             button#btn-cancelar.btn(type="button", hidden) Cancelar edición
 
-            //- Primer pintado desde el servidor; después public/js/cartelera.js lo mantiene actualizado con fetch.
+            //- Primer pintado desde el servidor; después public/js/cartelera.js lo reemplaza con fetch (incluye las funciones).
             section#lista-giras
                 if giras.length === 0
                     p.vacio Todavía no hay travesías publicadas.
@@ -66,16 +63,15 @@ html(lang="es")
                                 | 📍
                                 strong Ruta de Circulación:
                                 |  Nodal #{gira.origen} ➔ Nodal #{gira.destino} (Eje Dual)
-                            p
-                                | 👥
-                                strong Aforo Sincronizado:
-                                |  #{gira.aforoTotal} localidades disponibles (Inventario Único)
-                        if puedeEditar
-                            .acciones
+                        h3.funciones-titulo Funciones
+                        ul.funciones
+                            li.vacio Cargando funciones…
+                        .acciones
+                            a.btn(href="/boleteria") Comprar entradas
+                            if puedeEditar
                                 button.btn(type="button", data-accion="editar") Editar
                                 button.btn.btn-peligro(type="button", data-accion="eliminar") Eliminar
 
-        
-        script(type="module", src="/js/sesion.js")
         script(src="/socket.io/socket.io.js")
+        script(type="module", src="/js/sesion.js")
         script(type="module", src="/js/cartelera.js")
