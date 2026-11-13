@@ -1,0 +1,60 @@
+- const esPersonal = usuario && ["admin", "espacio"].includes(usuario.rol)
+doctype html
+html(lang="es")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Boletería - Urbana Cult
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/boleteria.css")
+    body(data-es-personal=esPersonal ? "true" : "false")
+        .container
+            .barra
+                a.volver(href="/") ← Volver al inicio
+                if usuario
+                    .sesion
+                        span Sesión: #{usuario.usuario}
+                        button#btn-salir.btn(type="button") Cerrar sesión
+
+            h1 Boletería e inventario único
+            p.sub Venta digital y en puerta sobre un mismo aforo, actualizado en tiempo real.
+            p
+                span#estado-conexion.estado-conexion.desconectado(role="status") Conectando…
+
+            #mensaje(role="status", aria-live="polite", hidden)
+
+            //- Solo admin y espacio. La seguridad real está en el servidor (permitirRoles).
+            if esPersonal
+                section.panel
+                    h2 Nueva función
+                    form#funcion-form(novalidate)
+                        .campos
+                            label
+                                | Travesía
+                                select#select-gira(name="giraId", required)
+                            label
+                                | Ciudad
+                                input(type="text", name="ciudad", required, maxlength="100")
+                            label
+                                | Sala
+                                input(type="text", name="sala", required, maxlength="100")
+                            label
+                                | Fecha y hora
+                                input(type="datetime-local", name="fecha", required)
+                            label
+                                | Aforo
+                                input(type="number", name="aforo", required, min="1", step="1")
+                        .botones
+                            button.btn.btn-principal(type="submit") Crear función
+
+            h2.seccion-titulo Funciones a la venta
+            section#lista-funciones.lista-tarjetas
+                p.vacio Cargando funciones…
+
+            h2.seccion-titulo Mis entradas
+            section#lista-entradas.lista-tarjetas
+                p.vacio Cargando entradas…
+
+        script(src="/socket.io/socket.io.js")
+        script(type="module", src="/js/sesion.js")
+        script(type="module", src="/js/boleteria.js")
