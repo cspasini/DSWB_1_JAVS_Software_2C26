@@ -71,3 +71,8 @@ export function emitirCartelera(cambio) {
 export function emitirVentaAlPersonal(venta) {
   io?.to(SALA_PERSONAL).emit("entrada:vendida", venta);
 }
+
+// Un ingreso validado en cualquier puerta se avisa a todo el personal.
+export function emitirIngreso(ingreso) {
+  io?.to(SALA_PERSONAL).emit("entrada:validada", ingreso);
+}
