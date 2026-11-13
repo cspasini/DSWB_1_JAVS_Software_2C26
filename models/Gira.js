@@ -15,16 +15,7 @@ const giraSchema = new mongoose.Schema(
     nombreTour: textoObligatorio("El nombre del tour"),
     origen: textoObligatorio("El origen"),
     destino: textoObligatorio("El destino"),
-    aforoTotal: {
-      type: Number,
-      required: [true, "El aforo total es obligatorio"],
-      min: [1, "El aforo total debe ser al menos 1"],
-      cast: "El aforo total debe ser un número",
-      validate: {
-        validator: Number.isInteger,
-        message: "El aforo total debe ser un número entero",
-      },
-    },
+
     estado: {
       type: String,
       enum: {
