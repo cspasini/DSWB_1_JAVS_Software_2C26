@@ -1,0 +1,45 @@
+/* Funciones dentro de cada tarjeta de la cartelera */
+.funciones-titulo {
+  margin: 16px 0 8px;
+  font-size: 15px;
+  color: #555;
+}
+.funciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.funcion {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 4px 16px;
+  padding: 10px 12px;
+  background: #f9faf9;
+  border-radius: 6px;
+  border-left: 4px solid #087f5b;
+  font-size: 14px;
+}
+.funcion p {
+  margin: 0;
+}
+.funcion.agotada {
+  border-left-color: #b42318;
+}
+.funcion.cancelada {
+  border-left-color: #999;
+  opacity: 0.7;
+}
+.funcion.cancelada .funcion-cuando {
+  text-decoration: line-through;
+}
+.funciones .vacio {
+  font-size: 14px;
+  color: #6b7270;
+}
+@media (max-width: 640px) {
+  .funcion {
+    grid-template-columns: 1fr;
+  }
+}
