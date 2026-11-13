@@ -89,3 +89,56 @@ export async function venderEntradas({
     throw error;
   }
 }
+
+const formatoFechaHora = new Intl.DateTimeFormat("es-AR", {
+  dateStyle: "short",
+  timeStyle: "short",
+  timeZone: "America/Argentina/Buenos_Aires",
+});
+
+// Valida una entrada en puerta: la marca como usada si estaba válida.
+// Devuelve la entrada, su función (con la gira) y cuántas entradas ya ingresaron a esa función.
+export async function validarEntrada({ codigo, validadorId }) {
+  if (typeof codigo !== "string" || !codigo.trim() || codigo.length > 100) {
+    throw new ErrorBoleteria(400, "Ingrese un código válido");
+  }
+
+  const entrada = await Entrada.findOne({ codigo: codigo.trim() }).populate({
+    path: "funcionId",
+    populate: { path: "giraId", select: "artista nombreTour" },
+  });
+  if (!entrada) {
+    throw new ErrorBoleteria(404, "Código no válido: la entrada no existe");
+  }
+
+  const funcion = entrada.funcionId;
+  if (entrada.estado === "usada") {
+    const cuando = entrada.usadaEn
+      ? ` (${formatoFechaHora.format(entrada.usadaEn)})`
+      : "";
+    throw new ErrorBoleteria(409, `Entrada ya utilizada${cuando}`);
+  }
+  if (entrada.estado === "anulada") {
+    throw new ErrorBoleteria(409, "Entrada anulada");
+  }
+  if (!funcion || funcion.estado !== "Programada") {
+    throw new ErrorBoleteria(409, "La función fue cancelada");
+  }
+
+  // Marcado atómico: solo pasa a "usada" si SIGUE válida. Si dos puertas escanean la misma
+  // entrada al mismo tiempo, la base deja pasar a una sola.
+  const marcada = await Entrada.findOneAndUpdate(
+    { _id: entrada._id, estado: "valida" },
+    {
+      $set: { estado: "usada", usadaEn: new Date(), validadaPor: validadorId },
+    },
+    { returnDocument: "after" },
+  );
+  if (!marcada) throw new ErrorBoleteria(409, "Entrada ya utilizada");
+
+  const ingresaron = await Entrada.countDocuments({
+    funcionId: funcion._id,
+    estado: "usada",
+  });
+  return { entrada: marcada, funcion, ingresaron };
+}
