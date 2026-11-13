@@ -1,6 +1,26 @@
+import mongoose from "mongoose";
+import QRCode from "qrcode";
+
 import Entrada from "../models/Entrada.js";
-import { ErrorBoleteria, venderEntradas } from "../servicios/boleteria.js";
-import { emitirAforo, emitirVentaAlPersonal } from "../servicios/tiempoReal.js";
+import {
+  ErrorBoleteria,
+  validarEntrada,
+  venderEntradas,
+} from "../servicios/boleteria.js";
+import {
+  emitirAforo,
+  emitirIngreso,
+  emitirVentaAlPersonal,
+} from "../servicios/tiempoReal.js";
+import { ROL } from "../utils/roles.js";
+
+// Responde los errores de negocio con su código HTTP; los demás los atiende manejarErrores.
+function responderError(res, error) {
+  if (error instanceof ErrorBoleteria) {
+    return res.status(error.status).json({ mensaje: error.message });
+  }
+  throw error;
+}
 
 // Lógica común a las dos ventas (digital y en boletería física).
 async function registrarVenta(req, res, canal) {
@@ -32,10 +52,7 @@ async function registrarVenta(req, res, canal) {
       entradas,
     });
   } catch (error) {
-    if (error instanceof ErrorBoleteria) {
-      return res.status(error.status).json({ mensaje: error.message });
-    }
-    throw error; // lo atiende manejarErrores
+    responderError(res, error);
   }
 }
 
@@ -56,4 +73,59 @@ export const misEntradas = async (req, res) => {
       populate: { path: "giraId", select: "artista nombreTour" },
     });
   res.json(entradas);
+};
+
+// GET /api/entradas/:id/qr: imagen QR (SVG) de una entrada. La ve su dueño o el personal.
+export const qrEntrada = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    return res.status(400).json({ mensaje: "El identificador no es válido" });
+  }
+
+  const entrada = await Entrada.findById(id);
+  const esDuenio =
+    entrada?.usuarioId && String(entrada.usuarioId) === req.usuario.id;
+  const esPersonal = [ROL.ADMIN, ROL.ESPACIO].includes(req.usuario.rol);
+
+  // Mismo 404 si no existe o no es suya: no se revela qué entradas existen.
+  if (!entrada || !(esDuenio || esPersonal)) {
+    return res.status(404).json({ mensaje: "La entrada no existe" });
+  }
+
+  const svg = await QRCode.toString(entrada.codigo, {
+    type: "svg",
+    margin: 1,
+    errorCorrectionLevel: "M",
+  });
+  res.type("image/svg+xml").set("Cache-Control", "private, no-store").send(svg);
+};
+
+// POST /api/entradas/validar: validación en puerta (admin y espacio)
+export const validar = async (req, res) => {
+  try {
+    const { entrada, funcion, ingresaron } = await validarEntrada({
+      codigo: req.body?.codigo,
+      validadorId: req.usuario.id,
+    });
+
+    const gira = funcion.giraId; // poblada con artista y nombreTour (puede ser null si se borró)
+    const ingreso = {
+      entradaId: entrada.id,
+      funcionId: funcion.id,
+      artista: gira?.artista ?? "",
+      nombreTour: gira?.nombreTour ?? "",
+      ciudad: funcion.ciudad,
+      sala: funcion.sala,
+      canal: entrada.canal,
+      ingresaron,
+      vendidas: funcion.vendidas,
+      hora: entrada.usadaEn,
+      validador: req.usuario.usuario,
+    };
+
+    emitirIngreso(ingreso); // todas las puertas ven el ingreso al instante
+    res.json({ mensaje: "Entrada válida: acceso permitido", ...ingreso });
+  } catch (error) {
+    responderError(res, error);
+  }
 };
