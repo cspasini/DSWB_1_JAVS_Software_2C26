@@ -23,29 +23,6 @@ html(lang="es")
 
             #mensaje(role="status", aria-live="polite", hidden)
 
-            //- Solo admin y espacio. La seguridad real está en el servidor (permitirRoles).
-            if esPersonal
-                section.panel
-                    h2 Nueva función
-                    form#funcion-form(novalidate)
-                        .campos
-                            label
-                                | Travesía
-                                select#select-gira(name="giraId", required)
-                            label
-                                | Ciudad
-                                input(type="text", name="ciudad", required, maxlength="100")
-                            label
-                                | Sala
-                                input(type="text", name="sala", required, maxlength="100")
-                            label
-                                | Fecha y hora
-                                input(type="datetime-local", name="fecha", required)
-                            label
-                                | Aforo
-                                input(type="number", name="aforo", required, min="1", step="1")
-                        .botones
-                            button.btn.btn-principal(type="submit") Crear función
             if esPersonal
                 section#emitidas.panel(hidden)
                     h2 Entradas emitidas en puerta
