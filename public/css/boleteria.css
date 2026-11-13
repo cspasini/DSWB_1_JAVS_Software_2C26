@@ -76,3 +76,21 @@
   background: #fdecea;
   color: #b42318;
 }
+.qr {
+  display: block;
+  width: 160px;
+  height: 160px;
+  margin: 10px 0;
+  background: white;
+}
+#emitidas[hidden] {
+  display: none;
+}
+
+/* Al imprimir solo salen las entradas emitidas */
+@media print {
+  .container > :not(#emitidas),
+  #emitidas .botones {
+    display: none !important;
+  }
+}
