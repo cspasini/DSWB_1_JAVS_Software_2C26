@@ -69,6 +69,14 @@ app.get("/", protegerPagina, (req, res) => {
 app.get("/boleteria", protegerPagina, (_req, res) => {
   res.render("boleteria");
 });
+app.get(
+  "/acceso",
+  protegerPagina,
+  permitirRolesPagina(ROL.ADMIN, ROL.ESPACIO),
+  (_req, res) => {
+    res.render("acceso");
+  },
+);
 
 // 404 y manejo de errores
 app.use(rutaNoEncontrada);
