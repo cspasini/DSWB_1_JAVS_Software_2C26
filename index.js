@@ -4,6 +4,7 @@ import express from "express";
 import path from "path"; // Módulo nativo para manejar rutas de carpetas
 import { fileURLToPath } from "url"; // Para obtener la ruta del archivo actual
 import { modulos } from "./config/modulos.js";
+import chatRoutes from "./routes/chatRoutes.js";
 import {
   identificarUsuario,
   permitirRolesPagina,
@@ -47,6 +48,7 @@ app.use("/api", usuarioRoutes); // Rutas de la API para administrar usuarios y r
 app.use("/api", giraRoutes); // Rutas de la API para giras
 app.use("/api", funcionRoutes); // Rutas de la API para funciones
 app.use("/api", entradaRoutes); // Rutas de la API para entradas
+app.use("/api", chatRoutes); // Rutas de la API del chat
 
 app.get("/login", mostrarLogin); // Vista del login
 app.get("/registro", mostrarRegistro); // Vista de registro
@@ -77,7 +79,9 @@ app.get(
     res.render("acceso");
   },
 );
-
+app.get("/chat", protegerPagina, (_req, res) => {
+  res.render("chat");
+});
 // 404 y manejo de errores
 app.use(rutaNoEncontrada);
 app.use(manejarErrores);
