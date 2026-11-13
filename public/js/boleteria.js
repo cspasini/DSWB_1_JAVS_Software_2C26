@@ -9,8 +9,6 @@ const listaFunciones = document.querySelector("#lista-funciones");
 const listaEntradas = document.querySelector("#lista-entradas");
 const mensaje = document.querySelector("#mensaje");
 const estadoConexion = document.querySelector("#estado-conexion");
-const formFuncion = document.querySelector("#funcion-form"); // solo existe para admin y espacio
-const selectGira = document.querySelector("#select-gira");
 
 const formatoFecha = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "full",
@@ -190,7 +188,6 @@ async function cargarFunciones() {
     pedir("/api/funciones"),
   ]);
   giras = giasCargadas;
-  llenarSelectGira();
 
   const ahora = Date.now();
   const visibles = funciones.filter(
@@ -204,21 +201,6 @@ async function cargarFunciones() {
   } else {
     listaFunciones.replaceChildren(...visibles.map(crearTarjeta));
   }
-}
-
-function llenarSelectGira() {
-  if (!selectGira) return;
-  const seleccionada = selectGira.value;
-
-  selectGira.replaceChildren(
-    ...giras.map((gira) => {
-      const opcion = document.createElement("option");
-      opcion.value = gira.id;
-      opcion.textContent = nombreGira(gira);
-      return opcion;
-    }),
-  );
-  if (seleccionada) selectGira.value = seleccionada;
 }
 
 /* ---------- Mis entradas ---------- */
@@ -327,32 +309,6 @@ listaFunciones.addEventListener("click", async (evento) => {
     if (tarjeta.isConnected && !tarjeta.classList.contains("agotada")) {
       boton.disabled = false;
     }
-  }
-});
-
-formFuncion?.addEventListener("submit", async (evento) => {
-  evento.preventDefault();
-
-  const datos = Object.fromEntries(new FormData(formFuncion));
-  datos.aforo = Number(datos.aforo);
-  // El campo datetime-local trae hora local sin zona: se convierte a ISO (UTC) para el servidor.
-  const fecha = new Date(datos.fecha);
-  datos.fecha = Number.isNaN(fecha.getTime()) ? "" : fecha.toISOString();
-
-  const boton = formFuncion.querySelector("button[type='submit']");
-  boton.disabled = true;
-  try {
-    const { mensaje: texto } = await pedir("/api/funciones", {
-      method: "POST",
-      body: JSON.stringify(datos),
-    });
-    formFuncion.reset();
-    await cargarFunciones();
-    mostrarMensaje(texto);
-  } catch (error) {
-    mostrarError(error);
-  } finally {
-    boton.disabled = false;
   }
 });
 
