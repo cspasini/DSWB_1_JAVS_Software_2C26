@@ -46,7 +46,13 @@ html(lang="es")
                                 input(type="number", name="aforo", required, min="1", step="1")
                         .botones
                             button.btn.btn-principal(type="submit") Crear función
-
+            if esPersonal
+                section#emitidas.panel(hidden)
+                    h2 Entradas emitidas en puerta
+                    #lista-emitidas.lista-tarjetas
+                    .botones
+                        button#btn-imprimir.btn.btn-principal(type="button") Imprimir
+                        button#btn-cerrar-emitidas.btn(type="button") Cerrar
             h2.seccion-titulo Funciones a la venta
             section#lista-funciones.lista-tarjetas
                 p.vacio Cargando funciones…
