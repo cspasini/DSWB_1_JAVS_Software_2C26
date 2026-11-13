@@ -29,6 +29,8 @@ const entradaSchema = new mongoose.Schema(
     vendedorId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
     codigo: { type: String, required: true, unique: true },
     estado: { type: String, enum: ESTADOS_ENTRADA, default: "valida" },
+    usadaEn: { type: Date }, // cuándo se validó en puerta
+    validadaPor: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
   },
   {
     timestamps: true,
