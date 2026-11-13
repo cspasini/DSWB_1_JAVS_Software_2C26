@@ -40,6 +40,18 @@ export function iniciarTiempoReal(servidorHttp) {
     socket.join(SALA_GENERAL);
     if (rol === ROL.ADMIN || rol === ROL.ESPACIO) socket.join(SALA_PERSONAL);
 
+    socket.join(`usuario:${socket.data.usuario.id}`); // sala privada para avisos personales
+
+    // El cliente pide escuchar el chat de una gira. Solo escucha: escribir va por REST.
+    socket.on("chat:unirse", (giraId) => {
+      if (typeof giraId === "string" && /^[a-f\d]{24}$/i.test(giraId)) {
+        socket.join(`gira:${giraId}`);
+      }
+    });
+    socket.on("chat:salir", (giraId) => {
+      if (typeof giraId === "string") socket.leave(`gira:${giraId}`);
+    });
+
     // Cuando vence el JWT se corta el socket (la conexión no puede durar más que la sesión).
     const temporizador = setTimeout(
       () => socket.disconnect(true),
@@ -75,4 +87,8 @@ export function emitirVentaAlPersonal(venta) {
 // Un ingreso validado en cualquier puerta se avisa a todo el personal.
 export function emitirIngreso(ingreso) {
   io?.to(SALA_PERSONAL).emit("entrada:validada", ingreso);
+}
+
+export function emitirChat(sala, mensaje) {
+  io?.to(sala).emit("chat:mensaje", mensaje);
 }
