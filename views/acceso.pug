@@ -1,0 +1,44 @@
+doctype html
+html(lang="es")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Control de acceso - Urbana Cult
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/boleteria.css")
+        link(rel="stylesheet", href="/css/acceso.css")
+    body
+        .container
+            .barra
+                a.volver(href="/") ← Volver al inicio
+                if usuario
+                    .sesion
+                        span Sesión: #{usuario.usuario}
+                        button#btn-salir.btn(type="button") Cerrar sesión
+
+            h1 Control de acceso
+            p.sub Validación de entradas en puerta. Escribí el código, usá un lector o escaneá el QR con la cámara.
+            p
+                span#estado-conexion.estado-conexion.desconectado(role="status") Conectando…
+
+            section.panel
+                form#validar-form(novalidate)
+                    .campos
+                        label
+                            | Código de la entrada
+                            input#campo-codigo(type="text", name="codigo", autocomplete="off", autocapitalize="none", spellcheck="false", required, maxlength="100", autofocus)
+                    .botones
+                        button.btn.btn-principal(type="submit") Validar
+                        button#btn-camara.btn(type="button", hidden) Escanear con cámara
+                #visor.visor(hidden)
+                    video#video(playsinline, muted)
+
+            #resultado(role="status", aria-live="assertive", hidden)
+
+            h2.seccion-titulo Ingresos recientes
+            ul#ingresos.lista-ingresos
+                li.vacio Todavía no hay ingresos registrados.
+
+        script(src="/socket.io/socket.io.js")
+        script(type="module", src="/js/sesion.js")
+        script(type="module", src="/js/acceso.js")
