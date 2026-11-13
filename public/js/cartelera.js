@@ -231,3 +231,16 @@ lista.addEventListener("click", async (evento) => {
     if (error.status === 404) cargarGiras().catch(console.error);
   }
 });
+
+/* ---------- Tiempo real (Socket.IO) ---------- */
+
+// Si otra persona crea, edita o elimina una gira, la lista se actualiza sola.
+if (typeof io !== "undefined") {
+  const socket = io();
+  socket.on("cartelera:cambio", (cambio) => {
+    if (cambio.entidad === "gira") cargarGiras().catch(console.error);
+  });
+  socket.on("connect_error", (error) => {
+    if (error.message === "No autenticado") window.location.href = "/login";
+  });
+}
