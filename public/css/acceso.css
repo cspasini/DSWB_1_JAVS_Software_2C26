@@ -1,0 +1,52 @@
+/* Control de acceso: usa cartelera.css y boleteria.css (estado de conexión, títulos de sección) */
+.visor {
+  margin-top: 16px;
+}
+.visor[hidden],
+#resultado[hidden] {
+  display: none;
+}
+.visor video {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 8px;
+  background: #000;
+}
+
+.resultado {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  border-left: 8px solid;
+}
+.resultado p {
+  margin: 6px 0 0;
+}
+.resultado-titulo {
+  font-size: 22px;
+}
+.resultado.ok {
+  background: #e3faf2;
+  border-color: #087f5b;
+  color: #05563f;
+}
+.resultado.error {
+  background: #fdecea;
+  border-color: #b42318;
+  color: #7a1810;
+}
+
+.lista-ingresos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.ingreso {
+  background: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 4px solid #087f5b;
+  font-size: 14px;
+}
