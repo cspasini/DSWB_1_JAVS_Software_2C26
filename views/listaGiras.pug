@@ -21,7 +21,7 @@ html(lang="es")
 
             #mensaje(role="status", aria-live="polite", hidden)
 
-            //- El formulario solo se dibuja para admin y espacio. La seguridad real está en el servidor (permitirRoles).
+            //- Los formularios solo se dibujan para admin y espacio. La seguridad real está en el servidor (permitirRoles).
             if puedeEditar
                 section.panel
                     h2#form-titulo Nueva travesía
@@ -48,6 +48,38 @@ html(lang="es")
                             button#btn-guardar.btn.btn-principal(type="submit") Publicar travesía
                             button#btn-cancelar.btn(type="button", hidden) Cancelar edición
 
+                section.panel
+                    h2 Nueva función
+                    p.ayuda Una función es una fecha concreta de una travesía en una sala, con su propio aforo.
+                    form#funcion-form(novalidate)
+                        .campos
+                            label
+                                | Travesía
+                                select#select-gira(name="giraId", required)
+                            label
+                                | Ciudad
+                                input(type="text", name="ciudad", required, maxlength="100")
+                            label
+                                | Sala
+                                input(type="text", name="sala", required, maxlength="100")
+                            label
+                                | Fecha y hora de inicio
+                                input(type="datetime-local", name="fecha", required)
+                            label
+                                | Aforo
+                                input(type="number", name="aforo", required, min="1", step="1")
+                        details.opciones-ingreso
+                            summary Opciones de ingreso (puertas)
+                            .campos
+                                label
+                                    | Abrir puertas (minutos antes del inicio)
+                                    input(type="number", name="aperturaAntesMin", min="0", max="720", step="5", value="120")
+                                label
+                                    | Cerrar ingreso (minutos después del inicio)
+                                    input(type="number", name="cierreDespuesMin", min="15", max="1440", step="5", value="180")
+                        .botones
+                            button.btn.btn-principal(type="submit") Crear función
+
             //- Primer pintado desde el servidor; después public/js/cartelera.js lo reemplaza con fetch (incluye las funciones).
             section#lista-giras
                 if giras.length === 0
@@ -69,6 +101,7 @@ html(lang="es")
                         .acciones
                             a.btn(href="/boleteria") Comprar entradas
                             if puedeEditar
+                                button.btn(type="button", data-accion="agregar-funcion") Agregar función
                                 button.btn(type="button", data-accion="editar") Editar
                                 button.btn.btn-peligro(type="button", data-accion="eliminar") Eliminar
 
