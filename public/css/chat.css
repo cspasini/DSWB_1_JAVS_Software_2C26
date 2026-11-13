@@ -1,0 +1,71 @@
+.mensajes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 360px;
+  overflow-y: auto;
+  margin: 14px 0;
+  padding: 12px;
+  background: #f9faf9;
+  border: 1px solid #cfd6d4;
+  border-radius: 8px;
+}
+
+.burbuja {
+  max-width: 80%;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #111;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.burbuja.propia {
+  align-self: flex-end;
+  background: #e7f0ff;
+  border-left-color: #2b6cb0;
+}
+.burbuja.ia {
+  background: #e3faf2;
+  border-left-color: #087f5b;
+}
+.burbuja .autor {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #555;
+}
+.burbuja .hora {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #6b7270;
+}
+
+#chat-form {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.chat-campo {
+  flex: 1;
+}
+
+.estado-conexion {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+.estado-conexion.en-vivo {
+  background: #e3faf2;
+  color: #087f5b;
+}
+.estado-conexion.desconectado {
+  background: #eceeed;
+  color: #555;
+}
