@@ -5,7 +5,6 @@ const CAMPOS_PERMITIDOS = [
   "nombreTour",
   "origen",
   "destino",
-  "aforoTotal",
   "estado",
 ];
 
