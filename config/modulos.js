@@ -48,4 +48,14 @@ export const modulos = [
     activo: true,
     roles: [ROL.ADMIN], // solo lo ve (y puede entrar) el administrador
   },
+  {
+    id: "acceso",
+    icono: "🚪",
+    nombre: "Control de acceso",
+    descripcion:
+      "Validación de entradas en puerta con código QR y registro de ingresos en tiempo real.",
+    ruta: "/acceso",
+    activo: true,
+    roles: [ROL.ADMIN, ROL.ESPACIO], // solo el personal lo ve (y puede entrar)
+  },
 ];
