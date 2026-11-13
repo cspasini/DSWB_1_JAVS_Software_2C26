@@ -1,0 +1,41 @@
+doctype html
+html(lang="es")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Chat - Urbana Cult
+        link(rel="stylesheet", href="/css/cartelera.css")
+        link(rel="stylesheet", href="/css/chat.css")
+    body
+        .container
+            .barra
+                a.volver(href="/") ← Volver al inicio
+                if usuario
+                    .sesion
+                        span Sesión: #{usuario.usuario}
+                        button#btn-salir.btn(type="button") Cerrar sesión
+
+            h1 Urbana Cult — Chat y asistente
+            p.sub Consultá en tiempo real sobre cada travesía. Escribí @asistente al comienzo para preguntarle a la IA.
+
+            #mensaje(role="status", aria-live="polite", hidden)
+
+            section.panel
+                label
+                    | Travesía
+                    select#select-gira
+                        option(value="") Elegí una travesía…
+                #estado-conexion.estado-conexion(role="status") Sin conexión en vivo
+
+                #mensajes.mensajes(role="log", aria-live="polite", aria-label="Mensajes del chat")
+                    p.vacio Elegí una travesía para ver la conversación.
+
+                form#chat-form(novalidate)
+                    label.chat-campo
+                        | Mensaje
+                        input#chat-texto(type="text", maxlength="500", autocomplete="off", placeholder="Escribí tu mensaje o @asistente + tu pregunta", disabled)
+                    button#btn-enviar.btn.btn-principal(type="submit", disabled) Enviar
+
+        script(src="/socket.io/socket.io.js")
+        script(type="module", src="/js/sesion.js")
+        script(type="module", src="/js/chat.js")
