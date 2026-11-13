@@ -20,6 +20,9 @@ const formatoFecha = new Intl.DateTimeFormat("es-AR", {
 let giras = [];
 let temporizadorMensaje;
 
+const emitidas = document.querySelector("#emitidas"); // solo existe para admin y espacio
+const listaEmitidas = document.querySelector("#lista-emitidas");
+
 /* ---------- Capa de acceso a la API (fetch) ---------- */
 
 async function pedir(url, opciones = {}) {
@@ -90,6 +93,17 @@ function el(etiqueta, clase, texto) {
 const nombreGira = (gira) =>
   gira ? `${gira.artista} — ${gira.nombreTour}` : "Travesía";
 
+function crearImagenQR(entradaId) {
+  const img = document.createElement("img");
+  img.className = "qr";
+  img.src = `/api/entradas/${entradaId}/qr`; // la cookie de sesión viaja sola
+  img.alt = "Código QR de la entrada";
+  img.width = 160;
+  img.height = 160;
+  img.loading = "lazy";
+  return img;
+}
+
 /* ---------- Funciones a la venta ---------- */
 
 function crearTarjeta(funcion) {
@@ -97,6 +111,7 @@ function crearTarjeta(funcion) {
 
   const tarjeta = el("article", "card");
   tarjeta.dataset.id = funcion.id;
+  tarjeta.dataset.titulo = nombreGira(gira);
 
   const titulo = el("h2", "card-titulo", `${nombreGira(gira)} `);
   titulo.append(el("span", "etiqueta-agotada", "Agotada"));
@@ -223,6 +238,8 @@ function crearEntrada(entrada) {
     );
   }
 
+  if (entrada.estado === "valida") nodo.append(crearImagenQR(entrada.id));
+
   const codigo = el("p", "codigo");
   codigo.append("Código: ", el("code", "", entrada.codigo));
   nodo.append(codigo);
@@ -240,6 +257,33 @@ async function cargarMisEntradas() {
     listaEntradas.replaceChildren(...entradas.map(crearEntrada));
   }
 }
+
+// Muestra las entradas recién vendidas en puerta, con su QR, listas para imprimir.
+function mostrarEmitidas(titulo, entradas) {
+  if (!emitidas) return;
+
+  listaEmitidas.replaceChildren(
+    ...entradas.map((entrada) => {
+      const nodo = el("article", "card entrada-emitida");
+      nodo.append(el("h2", "card-titulo", titulo), crearImagenQR(entrada.id));
+      const codigo = el("p", "codigo");
+      codigo.append("Código: ", el("code", "", entrada.codigo));
+      nodo.append(codigo);
+      return nodo;
+    }),
+  );
+  emitidas.hidden = false;
+  emitidas.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document
+  .querySelector("#btn-imprimir")
+  ?.addEventListener("click", () => window.print());
+document
+  .querySelector("#btn-cerrar-emitidas")
+  ?.addEventListener("click", () => {
+    emitidas.hidden = true;
+  });
 
 /* ---------- Eventos ---------- */
 
@@ -259,7 +303,11 @@ listaFunciones.addEventListener("click", async (evento) => {
 
   boton.disabled = true;
   try {
-    const { mensaje: texto, disponibles } = await pedir(ruta, {
+    const {
+      mensaje: texto,
+      disponibles,
+      entradas,
+    } = await pedir(ruta, {
       method: "POST",
       body: JSON.stringify({ funcionId: tarjeta.dataset.id, cantidad }),
     });
@@ -267,6 +315,8 @@ listaFunciones.addEventListener("click", async (evento) => {
     actualizarDisponibilidad(tarjeta, disponibles);
     mostrarMensaje(texto);
     if (boton.dataset.accion === "comprar") await cargarMisEntradas();
+    if (boton.dataset.accion === "fisica")
+      mostrarEmitidas(tarjeta.dataset.titulo, entradas);
   } catch (error) {
     mostrarError(error);
     // Si la función cambió o se agotó mientras tanto, se refresca la lista
