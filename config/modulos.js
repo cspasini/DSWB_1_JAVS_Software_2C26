@@ -58,4 +58,13 @@ export const modulos = [
     activo: true,
     roles: [ROL.ADMIN, ROL.ESPACIO], // solo el personal lo ve (y puede entrar)
   },
+  {
+    id: "chat",
+    icono: "💬",
+    nombre: "Chat y asistente",
+    descripcion:
+      "Consultas en tiempo real sobre cada gira y asistente con IA para dudas de cartelera y compra.",
+    ruta: "/chat",
+    activo: true,
+  },
 ];
