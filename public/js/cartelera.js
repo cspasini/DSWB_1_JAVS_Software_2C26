@@ -1,13 +1,15 @@
-// Front de la cartelera: crea, edita y elimina travesías usando fetch contra /api/travesias
-// y muestra las próximas funciones (día, horario, sala y aforo) de cada una.
+// Front de la cartelera: crea, edita y elimina travesías y funciones usando fetch,
+// y muestra las próximas funciones (día, horario, sala y aforo) de cada travesía.
 // Todo el texto del servidor se inserta con textContent/append (nunca innerHTML), para evitar XSS.
 
 const API = "/api/travesias";
 const CAMPOS = ["artista", "nombreTour", "origen", "destino", "estado"];
 
-// Si el usuario no puede editar, el formulario no existe en la página (la vista no lo dibuja).
+// Si el usuario no puede editar, los formularios no existen en la página (la vista no los dibuja).
 const form = document.querySelector("#gira-form");
 const formTitulo = document.querySelector("#form-titulo");
+const formFuncion = document.querySelector("#funcion-form");
+const selectGira = document.querySelector("#select-gira");
 const lista = document.querySelector("#lista-giras");
 const mensaje = document.querySelector("#mensaje");
 const btnGuardar = document.querySelector("#btn-guardar");
@@ -62,6 +64,9 @@ const api = {
     pedir(`${API}/${id}`, { method: "PUT", body: JSON.stringify(datos) }),
   eliminar: (id) => pedir(`${API}/${id}`, { method: "DELETE" }),
   funciones: () => pedir("/api/funciones"),
+  crearFuncion: (datos) =>
+    pedir("/api/funciones", { method: "POST", body: JSON.stringify(datos) }),
+  eliminarFuncion: (id) => pedir(`/api/funciones/${id}`, { method: "DELETE" }),
 };
 
 /* ---------- Mensajes ---------- */
@@ -123,7 +128,7 @@ function pintarAforo(fila, disponibles, aforo) {
 function crearFuncion(funcion) {
   const fecha = new Date(funcion.fecha);
 
-  const fila = el("li", "funcion");
+  const fila = el("li", puedeEditar ? "funcion editable" : "funcion");
   fila.dataset.id = funcion.id;
   fila.dataset.estado = funcion.estado;
 
@@ -132,12 +137,37 @@ function crearFuncion(funcion) {
     el("strong", "", formatoDia.format(fecha)),
     ` · ${formatoHora.format(fecha)} hs`,
   );
+  if (typeof funcion.aperturaAntesMin === "number") {
+    const apertura = new Date(
+      fecha.getTime() - funcion.aperturaAntesMin * 60_000,
+    );
+    cuando.append(
+      el(
+        "small",
+        "funcion-puertas",
+        `Puertas desde las ${formatoHora.format(apertura)} hs`,
+      ),
+    );
+  }
 
   fila.append(
     cuando,
     el("p", "funcion-donde", `📍 ${funcion.ciudad} · ${funcion.sala}`),
     el("p", "funcion-aforo"),
   );
+
+  // Eliminar función: solo se ofrece a quienes pueden editar (el servidor igual lo exige).
+  if (puedeEditar) {
+    const btnEliminar = el(
+      "button",
+      "btn btn-peligro btn-chico",
+      "Eliminar función",
+    );
+    btnEliminar.type = "button";
+    btnEliminar.dataset.accion = "eliminar-funcion";
+    fila.append(btnEliminar);
+  }
+
   pintarAforo(fila, funcion.disponibles, funcion.aforo);
   return fila;
 }
@@ -180,15 +210,17 @@ function crearTarjeta(gira, funciones) {
 
   // Los botones de edición solo se muestran a quienes pueden editar (el servidor igual lo exige).
   if (puedeEditar) {
-    const btnEditar = el("button", "btn", "Editar");
-    btnEditar.type = "button";
-    btnEditar.dataset.accion = "editar";
-
-    const btnEliminar = el("button", "btn btn-peligro", "Eliminar");
-    btnEliminar.type = "button";
-    btnEliminar.dataset.accion = "eliminar";
-
-    acciones.append(btnEditar, btnEliminar);
+    const crearBoton = (clase, texto, accion) => {
+      const boton = el("button", clase, texto);
+      boton.type = "button";
+      boton.dataset.accion = accion;
+      return boton;
+    };
+    acciones.append(
+      crearBoton("btn", "Agregar función", "agregar-funcion"),
+      crearBoton("btn", "Editar", "editar"),
+      crearBoton("btn btn-peligro", "Eliminar", "eliminar"),
+    );
   }
 
   tarjeta.append(
@@ -202,8 +234,25 @@ function crearTarjeta(gira, funciones) {
   return tarjeta;
 }
 
+// Mantiene al día las opciones del selector de travesía del formulario de funciones.
+function llenarSelectGira(giras) {
+  if (!selectGira) return;
+  const seleccionada = selectGira.value;
+
+  selectGira.replaceChildren(
+    ...giras.map((gira) => {
+      const opcion = document.createElement("option");
+      opcion.value = gira.id;
+      opcion.textContent = `${gira.artista} — ${gira.nombreTour}`;
+      return opcion;
+    }),
+  );
+  if (seleccionada) selectGira.value = seleccionada;
+}
+
 async function cargarGiras() {
   const [giras, funciones] = await Promise.all([api.listar(), api.funciones()]);
+  llenarSelectGira(giras);
 
   // Se agrupan las funciones por gira y se muestran solo las próximas (ya vienen ordenadas por fecha).
   const ahora = Date.now();
@@ -225,7 +274,7 @@ async function cargarGiras() {
   }
 }
 
-/* ---------- Modo edición del formulario ---------- */
+/* ---------- Modo edición del formulario de la travesía ---------- */
 
 function entrarEnEdicion(gira) {
   idEnEdicion = gira.id;
@@ -249,7 +298,7 @@ function salirDeEdicion() {
 
 /* ---------- Eventos ---------- */
 
-// El "?." evita errores cuando el formulario no existe (usuarios sin permiso de edición).
+// El "?." evita errores cuando los formularios no existen (usuarios sin permiso de edición).
 form?.addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
@@ -273,20 +322,49 @@ form?.addEventListener("submit", async (evento) => {
 
 btnCancelar?.addEventListener("click", salirDeEdicion);
 
+formFuncion?.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+
+  const datos = Object.fromEntries(new FormData(formFuncion));
+  datos.aforo = Number(datos.aforo);
+  datos.aperturaAntesMin = Number(datos.aperturaAntesMin);
+  datos.cierreDespuesMin = Number(datos.cierreDespuesMin);
+  // El campo datetime-local trae hora local sin zona: se convierte a ISO (UTC) para el servidor.
+  const fecha = new Date(datos.fecha);
+  datos.fecha = Number.isNaN(fecha.getTime()) ? "" : fecha.toISOString();
+
+  const boton = formFuncion.querySelector("button[type='submit']");
+  boton.disabled = true;
+  try {
+    const { mensaje: texto } = await api.crearFuncion(datos);
+
+    // Se limpia el formulario pero se mantiene la travesía elegida, para cargar varias funciones seguidas.
+    formFuncion.reset();
+    selectGira.value = datos.giraId;
+    await cargarGiras();
+    mostrarMensaje(texto);
+  } catch (error) {
+    mostrarError(error);
+  } finally {
+    boton.disabled = false;
+  }
+});
+
 // Un solo listener para todos los botones de la lista (delegación de eventos)
 lista.addEventListener("click", async (evento) => {
   const boton = evento.target.closest("button[data-accion]");
   if (!boton) return;
 
+  const accion = boton.dataset.accion;
   const { id } = boton.closest(".card").dataset;
 
   try {
-    if (boton.dataset.accion === "editar") {
+    if (accion === "editar") {
       // Se pide la gira al servidor para editar siempre sobre datos actuales
       entrarEnEdicion(await api.obtener(id));
     }
 
-    if (boton.dataset.accion === "eliminar") {
+    if (accion === "eliminar") {
       if (!confirm("¿Eliminar esta travesía de la cartelera?")) return;
 
       const { mensaje: texto } = await api.eliminar(id);
@@ -294,9 +372,25 @@ lista.addEventListener("click", async (evento) => {
       await cargarGiras();
       mostrarMensaje(texto);
     }
+
+    if (accion === "agregar-funcion") {
+      // Se preselecciona esta travesía en el formulario de funciones y se lleva al usuario hasta él.
+      selectGira.value = id;
+      formFuncion.scrollIntoView({ behavior: "smooth", block: "start" });
+      formFuncion.elements.ciudad.focus();
+    }
+
+    if (accion === "eliminar-funcion") {
+      if (!confirm("¿Eliminar esta función?")) return;
+
+      const funcionId = boton.closest(".funcion").dataset.id;
+      const { mensaje: texto } = await api.eliminarFuncion(funcionId);
+      await cargarGiras();
+      mostrarMensaje(texto);
+    }
   } catch (error) {
     mostrarError(error);
-    // Si la gira ya no existe (la borró otra persona), se refresca la lista
+    // Si lo que se quería modificar ya no existe (lo borró otra persona), se refresca la lista
     if (error.status === 404) cargarGiras().catch(console.error);
   }
 });
@@ -306,7 +400,7 @@ lista.addEventListener("click", async (evento) => {
 if (typeof io !== "undefined") {
   const socket = io();
 
-  // Se creó, editó o eliminó una gira o una función: se recarga la lista.
+  // Se creó, editó o eliminó una travesía o una función: se recarga la lista.
   socket.on("cartelera:cambio", () => cargarGiras().catch(console.error));
 
   // Alguien compró o vendió: cambian los lugares de esa función sin recargar.
