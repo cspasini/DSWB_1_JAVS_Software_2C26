@@ -5,6 +5,11 @@ import Entrada from "../models/Entrada.js";
 import Funcion from "../models/Funcion.js";
 
 export const MAX_POR_COMPRA = 6;
+// Ventanas horarias respecto del inicio de la función (ajustables).
+const HORA_MS = 60 * 60 * 1000;
+const HORAS_APERTURA_ANTES = 3; // el ingreso se habilita 3 h antes del inicio
+const HORAS_INGRESO_DESPUES = 6; // y se cierra 6 h después del inicio
+const HORAS_VENTA_PUERTA_DESPUES = 1; // en boletería se vende hasta 1 h después del inicio
 
 // Error de negocio con el código HTTP que corresponde (400, 404, 409...).
 export class ErrorBoleteria extends Error {
@@ -39,6 +44,11 @@ export async function venderEntradas({
       `La cantidad debe ser un número entero entre 1 y ${MAX_POR_COMPRA}`,
     );
   }
+  // La venta online se cierra al comenzar la función; en boletería se permite un rato más.
+  const limiteVenta = new Date(
+    Date.now() -
+      (canal === "fisico" ? HORAS_VENTA_PUERTA_DESPUES * HORA_MS : 0),
+  );
 
   // Reserva atómica: en UNA sola operación se comprueba que haya lugar y se descuenta.
   // Si dos compras llegan a la vez, la base las procesa una detrás de otra: no hay sobreventa.
@@ -46,7 +56,7 @@ export async function venderEntradas({
     {
       _id: funcionId,
       estado: "Programada",
-      fecha: { $gt: new Date() },
+      fecha: { $gt: limiteVenta },
       $expr: { $lte: [{ $add: ["$vendidas", cantidad] }, "$aforo"] },
     },
     { $inc: { vendidas: cantidad } },
@@ -57,7 +67,7 @@ export async function venderEntradas({
     // No se pudo reservar: se averigua el motivo para dar un mensaje claro.
     const existente = await Funcion.findById(funcionId);
     if (!existente) throw new ErrorBoleteria(404, "La función no existe");
-    if (existente.estado !== "Programada" || existente.fecha <= new Date()) {
+    if (existente.estado !== "Programada" || existente.fecha <= limiteVenta) {
       throw new ErrorBoleteria(
         409,
         "La función no está disponible para la venta",
@@ -123,6 +133,19 @@ export async function validarEntrada({ codigo, validadorId }) {
   }
   if (!funcion || funcion.estado !== "Programada") {
     throw new ErrorBoleteria(409, "La función fue cancelada");
+  }
+  // Solo se puede validar dentro de la ventana horaria de la función.
+  const inicio = funcion.fecha.getTime();
+  const abre = inicio - HORAS_APERTURA_ANTES * HORA_MS;
+  const cierra = inicio + HORAS_INGRESO_DESPUES * HORA_MS;
+  if (Date.now() < abre) {
+    throw new ErrorBoleteria(
+      409,
+      `Todavía no se habilita el ingreso a esta función (abre el ${formatoFechaHora.format(new Date(abre))})`,
+    );
+  }
+  if (Date.now() > cierra) {
+    throw new ErrorBoleteria(409, "La función ya finalizó: la entrada venció");
   }
 
   // Marcado atómico: solo pasa a "usada" si SIGUE válida. Si dos puertas escanean la misma
