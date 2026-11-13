@@ -1,0 +1,78 @@
+/* Boletería: usa la base de cartelera.css (fondo, contenedor, tarjetas, formularios, botones, mensajes) */
+.seccion-titulo {
+  margin: 28px 0 12px;
+  font-size: 20px;
+}
+.lista-tarjetas {
+  display: grid;
+  gap: 16px;
+}
+
+/* Indicador del WebSocket */
+.estado-conexion {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+.estado-conexion.en-vivo {
+  background: #e3faf2;
+  color: #087f5b;
+}
+.estado-conexion.desconectado {
+  background: #fdecea;
+  color: #b42318;
+}
+
+/* Compra */
+.compra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.compra label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.compra input[type="number"] {
+  width: 80px;
+}
+
+/* Función agotada */
+.card.agotada {
+  opacity: 0.8;
+}
+.etiqueta-agotada {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #fdecea;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: bold;
+}
+.etiqueta-agotada[hidden] {
+  display: none;
+}
+
+/* Mis entradas */
+.codigo code {
+  font-family: monospace;
+  word-break: break-all;
+}
+.badge.valida {
+  background: #e3faf2;
+  color: #087f5b;
+}
+.badge.usada {
+  background: #eceeed;
+  color: #555;
+}
+.badge.anulada {
+  background: #fdecea;
+  color: #b42318;
+}
