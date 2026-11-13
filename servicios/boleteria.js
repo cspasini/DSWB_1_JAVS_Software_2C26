@@ -2,13 +2,13 @@ import { randomBytes } from "node:crypto";
 import mongoose from "mongoose";
 
 import Entrada from "../models/Entrada.js";
-import Funcion from "../models/Funcion.js";
+import Funcion, { VENTANA_INGRESO_DEFECTO } from "../models/Funcion.js";
 
 export const MAX_POR_COMPRA = 6;
-// Ventanas horarias respecto del inicio de la función (ajustables).
-const HORA_MS = 60 * 60 * 1000;
-const HORAS_APERTURA_ANTES = 3; // el ingreso se habilita 3 h antes del inicio
-const HORAS_INGRESO_DESPUES = 6; // y se cierra 6 h después del inicio
+
+// Constantes de tiempo. La ventana de ingreso ya no está acá: se define en cada función.
+const MINUTO_MS = 60 * 1000;
+const HORA_MS = 60 * MINUTO_MS;
 const HORAS_VENTA_PUERTA_DESPUES = 1; // en boletería se vende hasta 1 h después del inicio
 
 // Error de negocio con el código HTTP que corresponde (400, 404, 409...).
@@ -134,10 +134,14 @@ export async function validarEntrada({ codigo, validadorId }) {
   if (!funcion || funcion.estado !== "Programada") {
     throw new ErrorBoleteria(409, "La función fue cancelada");
   }
-  // Solo se puede validar dentro de la ventana horaria de la función.
+  // Solo se puede validar dentro de la ventana de ingreso de ESTA función (se define al crearla).
   const inicio = funcion.fecha.getTime();
-  const abre = inicio - HORAS_APERTURA_ANTES * HORA_MS;
-  const cierra = inicio + HORAS_INGRESO_DESPUES * HORA_MS;
+  const aperturaMin =
+    funcion.aperturaAntesMin ?? VENTANA_INGRESO_DEFECTO.aperturaAntesMin;
+  const cierreMin =
+    funcion.cierreDespuesMin ?? VENTANA_INGRESO_DEFECTO.cierreDespuesMin;
+  const abre = inicio - aperturaMin * MINUTO_MS;
+  const cierra = inicio + cierreMin * MINUTO_MS;
   if (Date.now() < abre) {
     throw new ErrorBoleteria(
       409,
